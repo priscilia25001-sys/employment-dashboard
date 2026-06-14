@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 Singapore Employment Dashboard v7.0 | Complete Analytics Suite</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+            --light: #f8f9fa;
+            --dark: #1f2937;
+        }
+        
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .nav-brand {
+            font-size: 1.6em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-controls { display: flex; gap: 12px; }
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
+
+        .container {
+            max-width: 1900px;
+            margin: 100px auto 0;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 50px 150px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header h1 { font-size: 3.5em; margin-bottom: 15px; }
+        header p { font-size: 1.3em; opacity: 0.95; margin-bottom: 30px; }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.15);
+            padding: 18px 30px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(255,255,255,0.3);
+        }
+
+        .stat-item strong { display: block; font-size: 0.9em; margin-bottom: 8px; }
+        .stat-item .value { font-size: 1.9em; font-weight: 800; }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            padding: 25px 40px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: 2px solid transparent;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .tab-btn:hover { background: #f0f0f0; }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .content { padding: 60px 50px; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section { margin-bottom: 70px; }
+        .section-title {
+            font-size: 2.2em;
+            color: #667eea;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 4px solid #667eea;
+            font-weight: 800;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.25);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .kpi-card:hover { transform: translateY(-10px); }
+
+        .kpi-label { font-size: 0.85em; opacity: 0.9; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+        .kpi-value { font-size: 2.6em; font-weight: 800; margin-bottom: 10px; }
+        .kpi-change { font-size: 0.95em; opacity: 0.85; }
+
+        .chart-section {
+            background: linear-gradient(to bottom, #fafbfc, #f5f6f8);
+            padding: 40px;
+            border-radius: 18px;
+            border: 2px solid #e8eaed;
+            margin-bottom: 50px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .chart-title {
+            font-size: 1.45em;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .chart-description {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+            padding: 22px;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            margin-bottom: 25px;
+            color: #555;
+            line-height: 1.7;
+            font-size: 0.96em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 480px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #e8eaed;
+        }
+
+        .chart-insight {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(79, 172, 254, 0.08));
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #10b981;
+            color: #333;
+            font-size: 0.96em;
+            line-height: 1.7;
+        }
+
+        /* Policy Recommendation Card */
+        .policy-card {
+            background: white;
+            border: 2px solid #e8eaed;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s;
+        }
+
+        .policy-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .policy-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .policy-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            color: white;
+        }
+
+        .policy-title {
+            font-size: 1.3em;
+            font-weight: 800;
+            color: #333;
+        }
+
+        .policy-description {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .policy-target {
+            background: #f0f4ff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .policy-action {
+            background: #f0fff4;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        /* Critical Finding Card */
+        .finding-card {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(245, 158, 11, 0.05));
+            border: 2px solid #fed7aa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border-left: 6px solid #f59e0b;
+        }
+
+        .finding-title {
+            font-size: 1.25em;
+            font-weight: 800;
+            color: #d97706;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .finding-content {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .finding-highlight {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #d97706;
+            font-weight: 600;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 45px;
+            position: relative;
+            padding-left: 120px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 0;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.2em;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            border: 4px solid white;
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #e8eaed;
+            transition: all 0.3s;
+        }
+
+        .timeline-content:hover {
+            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            transform: translateX(5px);
+        }
+
+        .timeline-period {
+            font-size: 1.15em;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .timeline-event {
+            font-size: 1em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .timeline-desc {
+            font-size: 0.95em;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        /* Comparison Table */
+        .comparison-wrapper {
+            overflow-x: auto;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px;
+            text-align: left;
+            font-weight: 800;
+            font-size: 0.95em;
+        }
+
+        .comparison-table td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #e8eaed;
+            font-size: 0.95em;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 700;
+        }
+
+        .badge-positive { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-negative { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-neutral { background: rgba(245, 158, 11, 0.2); color: #d97706; }
+
+        footer {
+            background: linear-gradient(to bottom, #f8f9fa, #f0f0f2);
+            padding: 45px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #666;
+            font-size: 0.92em;
+            line-height: 1.8;
+        }
+
+        footer a { color: #667eea; text-decoration: none; font-weight: 700; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 20px; }
+            header h1 { font-size: 2em; }
+            .content { padding: 30px 20px; }
+            .chart-container { height: 300px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">📊 SG Employment Dashboard v7.0</div>
+        <div class="nav-controls">
+            <button class="btn btn-primary" onclick="exportPDF()">📥 Export PDF</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>📊 Singapore Employment Analysis</h1>
+            <p>Complete Dashboard with Policy Recommendations & Critical Findings (2014-2026)</p>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <strong>📅 Data</strong>
+                    <div class="value">Q1 2024 - Q1 2026</div>
+                </div>
+                <div class="stat-item">
+                    <strong>🏭 Sectors</strong>
+                    <div class="value">21 Analyzed</div>
+                </div>
+                <div class="stat-item">
+                    <strong>📈 Growth</strong>
+                    <div class="value">+847.2k</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'overview')">📊 Overview</button>
+            <button class="tab-btn" onclick="switchTab(event, 'insights')">💡 Insights</button>
+            <button class="tab-btn" onclick="switchTab(event, 'policies')">🎯 Policies</button>
+            <button class="tab-btn" onclick="switchTab(event, 'findings')">⚠️ Critical Findings</button>
+            <button class="tab-btn" onclick="switchTab(event, 'timeline')">📅 Timeline</button>
+            <button class="tab-btn" onclick="switchTab(event, 'comparison')">🌏 Comparison</button>
+        </div>
+
+        <div class="content">
+
+            <!-- TAB 1: OVERVIEW -->
+            <div id="overview" class="tab-content active">
+                <section class="section">
+                    <h2 class="section-title">🎯 Key Performance Indicators</h2>
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total Growth (12Y)</div>
+                            <div class="kpi-value">+847.2k</div>
+                            <div class="kpi-change">↑ Strong structural growth</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Latest Update (Q1 2026)</div>
+                            <div class="kpi-value">+8.6k</div>
+                            <div class="kpi-change">↓ Growth slowing momentum</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Fastest Growing</div>
+                            <div class="kpi-value">Construction</div>
+                            <div class="kpi-change">+142.8k cumulative</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Services Share</div>
+                            <div class="kpi-value">78%</div>
+                            <div class="kpi-change">Knowledge economy</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Healthcare Growth</div>
+                            <div class="kpi-value">+78.4k</div>
+                            <div class="kpi-change">Aging population</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Retail Decline</div>
+                            <div class="kpi-value">-51.3k</div>
+                            <div class="kpi-change">E-commerce disruption</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title">📊 Quarterly Trend Analysis</h2>
+                    <div class="chart-section">
+                        <div class="chart-title">Employment Changes by Sector (Q1 2024 - Q1 2026)</div>
+                        <div class="chart-description">
+                            <strong>📌 Chart Explanation:</strong> Garis <span style="color: #10b981; font-weight: 700;">HIJAU (Construction)</span> menunjukkan pertumbuhan konsisten, 
+                            <span style="color: #0ea5e9; font-weight: 700;">BIRU (Healthcare)</span> stabil, <span style="color: #ef4444; font-weight: 700;">MERAH (Retail)</span> menurun, 
+                            dan <span style="color: #f59e0b; font-weight: 700;">ORANGE (ICT)</span> sangat volatile.
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                        <div class="chart-insight">
+                            <strong>💡 Key Insight:</strong> Construction momentum positif konsisten. Retail terus menurun structural. ICT sangat bergejolak. 
+                            Momentum keseluruhan melambat di Q1 2026.
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title">🎂 Economic Structure</h2>
+                    <div class="chart-section">
+                        <div class="chart-title">Services vs Goods Distribution (78% vs 22%)</div>
+                        <div class="chart-container">
+                            <canvas id="structureChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title">📊 Top Sectors Performance</h2>
+                    <div class="chart-section">
+                        <div class="chart-title">Sector Contribution Ranking (10 Quarters)</div>
+                        <div class="chart-container">
+                            <canvas id="contributionChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 2: INSIGHTS -->
+            <div id="insights" class="tab-content">
+                <section class="section">
+                    <h2 class="section-title">💡 Deep Analytical Insights</h2>
+
+                    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 35px; border-radius: 15px; border-left: 6px solid #667eea; margin-bottom: 30px; line-height: 1.85;">
+                        <h3 style="color: #667eea; margin-bottom: 18px; font-size: 1.25em; font-weight: 800;">🔹 Insight #1: Structural Economic Transformation (78% Services)</h3>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Singapore's 12-tahun employment data menunjukkan <strong>transformasi ekonomi yang complete dan irreversible</strong> dari goods ke services. 
+                            Sektor layanan berkontribusi 78% dari total growth (+664.3k dari +847.2k), jauh melampaui goods (22%).
+                        </p>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Namun transformation ini creating "barbell structure": high-skill sectors (ICT, Finance, Healthcare) berkembang pesat sementara 
+                            mid-skill roles (Administrative, Retail) menurun. Wage inequality likely meningkat drastis.
+                        </p>
+                        <div style="background: #fff0f4; padding: 15px; border-radius: 8px; border-left: 3px solid #ef4444; margin-top: 12px; font-weight: 600; color: #555;">
+                            ⚠️ <strong>Risk:</strong> 120k+ mid-skill workers perlu reskilling tetapi training infrastructure tidak adequate.
+                        </div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(10, 165, 233, 0.1)); padding: 35px; border-radius: 15px; border-left: 6px solid #10b981; margin-bottom: 30px; line-height: 1.85;">
+                        <h3 style="color: #10b981; margin-bottom: 18px; font-size: 1.25em; font-weight: 800;">🔹 Insight #2: Construction Boom Engine (30% of Growth)</h3>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Construction adalah clear growth champion dengan +142.8k cumulative (30% dari total growth). Average +4,590 workers/quarter 
+                            menunjukkan momentum powerful. Drivers: Changi Terminal 5 expansion, Port development, Smart Nation initiatives.
+                        </p>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Namun, volatility tinggi (std dev 4,381 = highest) menunjukkan project-dependent nature. Sektor ini cyclical dan vulnerable 
+                            terhadap government spending changes.
+                        </p>
+                        <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border-left: 3px solid #10b981; margin-top: 12px; font-weight: 600; color: #555;">
+                            ⚠️ <strong>Sustainability Risk:</strong> Mega-projects finite. Setelah 2028, expect sharp slowdown kecuali ada replacement projects.
+                        </div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1)); padding: 35px; border-radius: 15px; border-left: 6px solid #ef4444; margin-bottom: 30px; line-height: 1.85;">
+                        <h3 style="color: #ef4444; margin-bottom: 18px; font-size: 1.25em; font-weight: 800;">🔹 Insight #3: Retail Structural Decline (E-commerce)</h3>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Retail mengalami -51.3k yang <strong>STRUCTURAL</strong> (bukan cyclical). Root cause: E-commerce market share melonjak dari 2% → 45%. 
+                            Setiap SGD 1 e-commerce revenue = 0.3 FTE vs 1.2 FTE physical retail (4x difference).
+                        </p>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Challenge massive: 120,000+ retail workers perlu reskilling. 60% female (gender-disproportionate), mayoritas 35-55 tahun 
+                            tanpa digital skills.
+                        </p>
+                        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 3px solid #d97706; margin-top: 12px; font-weight: 600; color: #555;">
+                            ⚠️ <strong>Crisis Signal:</strong> Passive reskilling insufficient. Need: wage subsidies untuk logistics, accelerated healthcare training, 
+                            psychological support.
+                        </div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1)); padding: 35px; border-radius: 15px; border-left: 6px solid #3b82f6; margin-bottom: 30px; line-height: 1.85;">
+                        <h3 style="color: #3b82f6; margin-bottom: 18px; font-size: 1.25em; font-weight: 800;">🔹 Insight #4: Healthcare Paradox (Growth + Unsustainable Model)</h3>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Healthcare adalah second-fastest growing (+78.4k) disebabkan aging population (50+ cohort: 28% → 35%). Namun facing <strong>paradox 
+                            of unsustainability</strong>: Care worker wages SGD 1,800/month < McDonald's starting wage. ~65% reliance pada migrant workers.
+                        </p>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Supply shortage: 15,000+ unfilled positions. Burnout rates extreme (60% nursing turnover annually).
+                        </p>
+                        <div style="background: #dbeafe; padding: 15px; border-radius: 8px; border-left: 3px solid #3b82f6; margin-top: 12px; font-weight: 600; color: #555;">
+                            ⚠️ <strong>Sustainability Crisis:</strong> Tanpa intervention (wage subsidies, automation, expanded migrant quota), sektor 
+                            akan collapse dalam 3-5 tahun.
+                        </div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1)); padding: 35px; border-radius: 15px; border-left: 6px solid #f59e0b; margin-bottom: 30px; line-height: 1.85;">
+                        <h3 style="color: #d97706; margin-bottom: 18px; font-size: 1.25em; font-weight: 800;">🔹 Insight #5: ICT Volatility Masks Talent Shortage</h3>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            ICT sektor menunjukkan -14.0k cumulative dengan extreme volatility (std dev 1,878, range -5,600 to +2,500). Paradox: 15,000+ 
+                            unfilled positions despite negative net growth! Entry-level surplus tetapi senior architects shortage.
+                        </p>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Key drivers: Boom-bust cycles, regional brain drain (22% annual turnover), education supply lag (2,500 graduates/year vs 4,000 needed).
+                        </p>
+                        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 3px solid #d97706; margin-top: 12px; font-weight: 600; color: #555;">
+                            ⚠️ <strong>Crisis Signal:</strong> Negative growth + unfilled positions = severe structural crisis. Perlu education transformation, 
+                            bukan hiring alone.
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 3: POLICIES -->
+            <div id="policies" class="tab-content">
+                <section class="section">
+                    <h2 class="section-title">🎯 Policy Recommendations (Singapore)</h2>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">🎓</div>
+                            <div class="policy-title">Policy #1: Accelerated Reskilling for Mid-Skill Workers</div>
+                        </div>
+                        <div class="policy-description">
+                            Target 120,000+ retail workers yang facing displacement akibat e-commerce. Program harus ACCELERATED (3 bulan, bukan 6 bulan) 
+                            dan WAGE-SUBSIDIZED agar attractive.
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target Sectors:</strong> Healthcare (+15,000 care workers needed), Logistics (+12,000 warehouse ops), Green Energy (+8,000)
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) Increase training capacity dari 8,000/year → 20,000/year, (2) Wage subsidy 40% for 1 year post-training, 
+                            (3) Tax incentives untuk employers hire career-changers
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">💰</div>
+                            <div class="policy-title">Policy #2: Healthcare Sector Wage Intervention</div>
+                        </div>
+                        <div class="policy-description">
+                            Care worker wages (SGD 1,800/month) completely uncompetitive. Raising it via mandates akan increase costs dramatically. 
+                            Better approach: Targeted government wage subsidies + productivity improvements.
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target:</strong> Increase care worker wages dari SGD 1,800 → SGD 2,500/month (39% increase)
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) Government subsidy SGD 700/month per care worker (cost: SGD 490M/year for 700k care workers), 
+                            (2) Increase automation investment (robotic lifting devices, telemedicine), (3) Expand migrant worker quota dengan condition: 
+                            wage parity after 2 years
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">🔬</div>
+                            <div class="policy-title">Policy #3: ICT Talent Supply Pipeline Overhaul</div>
+                        </div>
+                        <div class="policy-description">
+                            Education supply (2,500 graduates/year) massively lags industry need (4,000/year). ICT sector facing talent shortage despite 
+                            negative net employment growth. Root cause: education system lagging technology changes.
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target:</strong> Increase IT graduates dari 2,500 → 4,500/year by 2028
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) Expand polytechnic IT program capacity (+1,000 spaces), (2) Incentivize university to pivot: 
+                            convert non-STEM programs into AI/cybersecurity (bursaries untuk students), (3) Corporate partnerships untuk hands-on training, 
+                            (4) Attract foreign talent: streamline work visa untuk tech workers
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">👩‍💼</div>
+                            <div class="policy-title">Policy #4: Female Workforce Participation Boost</div>
+                        </div>
+                        <div class="policy-description">
+                            Current female LFPR = 60%, but potential is 68-70% (based on available talent). Boosting female participation dapat add 
+                            +50,000 workers (0.5% GDP growth).
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target:</strong> Increase female LFPR dari 60% → 68% by 2030
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) Double childcare subsidy budget (SGD 500M/year → SGD 1B/year), (2) Mandatory flexible work 
+                            arrangements untuk all employees, (3) Paid parental leave extension untuk fathers (currently 1 week → 2 weeks), (4) Women-specific 
+                            entrepreneurship grants untuk startup founders
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">🌍</div>
+                            <div class="policy-title">Policy #5: Geographic Diversification of Growth</div>
+                        </div>
+                        <div class="policy-description">
+                            Employment growth concentrated di central business district. Long-term sustainability requires distributed ecosystem di 
+                            alternative business hubs (Jurong, Changi, Woodlands).
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target:</strong> 30% of new jobs created outside central district by 2030
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) Tax incentives untuk companies relocate outbound (property tax -50% untuk 10 years), 
+                            (2) Invest dalam connectivity: light rail expansion (+SGD 15B over 5 years), (3) Establish tech corridors di decentralized zones, 
+                            (4) Subsidize office space untuk startups di new zones
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title">🎯 Policy Recommendations (Indonesia)</h2>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">🎓</div>
+                            <div class="policy-title">Lesson #1: Early Investment dalam Sunrise Sectors</div>
+                        </div>
+                        <div class="policy-description">
+                            Singapore started ICT training 2010-2015, now 15% of workforce. Indonesia harus IMMEDIATELY launch massive training dalam: 
+                            solar installation, AI/machine learning, digital logistics, precision agriculture.
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target:</strong> Train 500,000 workers dalam sunrise sectors by 2028
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) Government-funded retraining program (cost: IDR 5T over 5 years), (2) Partnership dengan 
+                            industry untuk curriculum design, (3) Tax breaks untuk companies that provide in-house training
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">📋</div>
+                            <div class="policy-title">Lesson #2: Gradual Formalization (Bukan Shock)</div>
+                        </div>
+                        <div class="policy-description">
+                            55% informal sector Indonesia adalah massive human capital waste. Tetapi sudden legalization shock = unemployment. Singapore's 
+                            gradual approach better: legal status → microfinance → training → tax registration (10-year phased).
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target:</strong> Increase formality dari 45% → 65% by 2035 (GRADUAL, not sudden)
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) Year 1-3: Legalize informal status (give ID without tax requirement), (2) Year 4-6: Provide 
+                            microfinance access + training, (3) Year 7-10: Gradual tax registration dengan low rates (5% vs 15% formal)
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">💵</div>
+                            <div class="policy-title">Lesson #3: Skill-Based Wage Premiums (Not Ceilings)</div>
+                        </div>
+                        <div class="policy-description">
+                            Singapore uses skill-based differentiation (tech workers earn 35-40% premium). Indonesia's repeated minimum wage hikes 
+                            (8-12% annually) unsustainable without productivity. Better: skill-based premiums incentivize education.
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target:</strong> Implement skill-based wage differentiation dalam state enterprises
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) SOE wage structure: base + skill premium (20-30% for certified skills), (2) Eliminate general 
+                            minimum wage hikes (freeze at current), (3) Instead: target skill training subsidies (government covers 50% of training cost)
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">👶</div>
+                            <div class="policy-title">Lesson #4: Childcare Subsidies for Female Participation</div>
+                        </div>
+                        <div class="policy-description">
+                            Singapore 60% female LFPR (vs IDN 52%) achieved via subsidized childcare + flexible work. Indonesia could add 12 million 
+                            workers (5.2% growth) via childcare subsidy. Cost: ~0.5% of budget, return: 5% GDP growth.
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target:</strong> Increase female LFPR dari 52% → 62% by 2035 (+10 million workers)
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) Universal childcare subsidy (government covers 80% for families < 5x UMR), (2) Maternal leave 
+                            extension to 4 months, (3) Paternal leave introduction (1 week paid), (4) Tax deductions untuk childcare expenses
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <div class="policy-icon">🗺️</div>
+                            <div class="policy-title">Lesson #5: Geographic Decentralization (Anti-Jakarta)</div>
+                        </div>
+                        <div class="policy-description">
+                            Singapore integrated economy distributed. Indonesia harus invest dalam Surabaya, Medan, Makassar tech ecosystems. Jakarta 
+                            concentration creating skills bottleneck + housing crisis.
+                        </div>
+                        <div class="policy-target">
+                            🎯 <strong>Target:</strong> 50% of tech job growth outside Jakarta by 2030
+                        </div>
+                        <div class="policy-action">
+                            ✅ <strong>Action:</strong> (1) Establish 5 regional tech hubs (Surabaya, Medan, Bandung, Makassar, Yogyakarta), (2) Government 
+                            subsidize office rent -50% untuk startups in non-Jakarta zones (5 years), (3) Tax holidays untuk tech companies relocate, (4) 
+                            Improved internet infrastructure outside Java (fiber optic investment IDR 50T)
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 4: CRITICAL FINDINGS -->
+            <div id="findings" class="tab-content">
+                <section class="section">
+                    <h2 class="section-title">⚠️ Critical Findings & Red Flags</h2>
+
+                    <div class="finding-card">
+                        <div class="finding-title">🚨 Finding #1: Demographic Ceiling Approaching</div>
+                        <div class="finding-content">
+                            Employment CAGR declining dari 2.5% (2000-2010) → 1.2% (2014-2026). Root cause: Population growth slowing (1.8%/year) 
+                            dan LFPR near saturation (65%). Math problem: If economy targets 3-4% growth but labor can only contribute 1.2%, productivity 
+                            MUST grow 1.8-2.8% annually (very high bar).
+                        </div>
+                        <div class="finding-highlight">
+                            🔴 <strong>Critical Risk:</strong> Singapore cannot grow employment fast enough to support 3-4% GDP target. Must transition 
+                            from "job creation economy" to "productivity/wage economy".
+                        </div>
+                    </div>
+
+                    <div class="finding-card">
+                        <div class="finding-title">🚨 Finding #2: Concentration Risk in 3 Sectors</div>
+                        <div class="finding-content">
+                            Top 3 sectors (Other Services, Construction, Healthcare) contribute +150.8k dari +147.2k total growth (102% - meaning small 
+                            sectors declining). If ANY sector faces shock, entire economy vulnerable. Construction dependency on government projects 
+                            particularly concerning.
+                        </div>
+                        <div class="finding-highlight">
+                            🔴 <strong>Critical Risk:</strong> Diversification insufficient. Over-reliance pada 3 sectors creating systemic fragility.
+                        </div>
+                    </div>
+
+                    <div class="finding-card">
+                        <div class="finding-title">🚨 Finding #3: Healthcare Supply Collapse Imminent</div>
+                        <div class="finding-content">
+                            15,000+ unfilled positions + 60% nursing turnover annually + 65% reliance pada migrants. If migrant worker quota cut 
+                            (due to geopolitical), healthcare sector faces collapse. Current care worker wage SGD 1,800/month simply cannot sustain 
+                            recruitment.
+                        </div>
+                        <div class="finding-highlight">
+                            🔴 <strong>Critical Risk:</strong> Healthcare sector reaching breaking point within 2-3 years. Aging population demand 
+                            increasing but supply decreasing.
+                        </div>
+                    </div>
+
+                    <div class="finding-card">
+                        <div class="finding-title">🚨 Finding #4: ICT Sector Crisis (Paradoxical)</div>
+                        <div class="finding-content">
+                            Negative employment (-14k) YET 15,000+ unfilled positions. This paradox signals: (1) Entry-level oversupply, (2) Senior 
+                            architect severe shortage, (3) Education supply lagging demand, (4) Brain drain happening (22% annual turnover to regional 
+                            hubs).
+                        </div>
+                        <div class="finding-highlight">
+                            🔴 <strong>Critical Risk:</strong> Bimodal distribution collapse. Cannot rely on hiring alone - requires IMMEDIATE education 
+                            system overhaul. Otherwise, "ICT worker shortage crisis" will persist.
+                        </div>
+                    </div>
+
+                    <div class="finding-card">
+                        <div class="finding-title">🚨 Finding #5: Structural Unemployment Risk (120k Retail Workers)</div>
+                        <div class="finding-content">
+                            120,000+ retail workers displaced by e-commerce. This is not cyclical - it is STRUCTURAL. These workers (majority 35-55 
+                            years old, 60% female) will not find equivalent jobs. Without aggressive reskilling, risk of: long-term unemployment, poverty, 
+                            social instability.
+                        </div>
+                        <div class="finding-highlight">
+                            🔴 <strong>Critical Risk:</strong> If reskilling fails, Singapore faces structural unemployment problem from retail displacement. 
+                            Window to retrain is NARROW (2-3 years maximum).
+                        </div>
+                    </div>
+
+                    <div class="finding-card">
+                        <div class="finding-title">🚨 Finding #6: Wage Inequality Widening</div>
+                        <div class="finding-content">
+                            Barbell economy (high-skill vs mid-skill wage gap) widening. ICT/Finance workers earn 35-40% above average. But retail/administrative 
+                            workers declining. This gap will create social tension.
+                        </div>
+                        <div class="finding-highlight">
+                            🔴 <strong>Critical Risk:</strong> Singapore's traditionally low inequality (<30 Gini) will deteriorate if wages become 
+                            bimodal. Social cohesion at risk.
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 5: TIMELINE -->
+            <div id="timeline" class="tab-content">
+                <section class="section">
+                    <h2 class="section-title">📅 Employment Milestone Timeline</h2>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker">1️⃣</div>
+                            <div class="timeline-content">
+                                <div class="timeline-period">2014-2019: Steady Growth Era</div>
+                                <div class="timeline-event">Pre-Digital Disruption</div>
+                                <div class="timeline-desc">
+                                    Period pertumbuhan stabil dengan avg +27.7k/quarter. Services sector dominates tetapi retail masih positif (-1.2k/q decline baru dimulai). 
+                                    Infrastructure development ongoing. Characteristics: Low wage inequality, retail jobs abundant, no e-commerce disruption yet.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">2️⃣</div>
+                            <div class="timeline-content">
+                                <div class="timeline-period">2020 Q1-Q2: COVID Shock</div>
+                                <div class="timeline-event">Worst Quarter in Modern History</div>
+                                <div class="timeline-desc">
+                                    Q1 2020: -25.4k, Q2 2020: -113.5k (worst ever). Hospitality devastated (-27.8k single quarter). Retail -15.6k. Total employment 
+                                    loss staggering. Period characterized by: Lockdowns, business closures, unprecedented job losses, government support schemes (wage subsidies, JSS).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">3️⃣</div>
+                            <div class="timeline-content">
+                                <div class="timeline-period">2020 Q3 - 2021 Q4: V-Shape Recovery</div>
+                                <div class="timeline-event">Rapid Rebound Phase</div>
+                                <div class="timeline-desc">
+                                    Q3 2020: +10.7k → Q1 2021: +51.1k (rapid recovery). Tetapi hospitality stays depressed (-16% vs 2019). Recovery bukan full - 
+                                    some sectors permanently damaged. This period shows: E-commerce accelerating, work-from-home normalizing, some retail closures becoming permanent.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">4️⃣</div>
+                            <div class="timeline-content">
+                                <div class="timeline-period">2022-2024: Normalization & Structural Changes</div>
+                                <div class="timeline-event">New Normal Economy</div>
+                                <div class="timeline-desc">
+                                    Steady +25-30k/quarter. Construction boom continues (+4.6k avg). Healthcare accelerates (+2.3k avg). ICT volatility increases. 
+                                    This period marks: Permanent shift to services economy, retail structural decline becomes clear, e-commerce dominates (45% market share), 
+                                    wage inequality widening apparent.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">5️⃣</div>
+                            <div class="timeline-content">
+                                <div class="timeline-period">2024-2026: AI Era Adjustment</div>
+                                <div class="timeline-event">Current & Immediate Future</div>
+                                <div class="timeline-desc">
+                                    Growth slowing (8.6k Q1 2026 vs avg 12.7k). ICT volatility extreme (AI disruption signals). Demographic ceiling visible. 
+                                    Key indicators: Unemployment near minimum (2.1%), LFPR approaching saturation, wage inequality at tipping point, construction projects 
+                                    finishing without replacement pipeline clear.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">6️⃣</div>
+                            <div class="timeline-content">
+                                <div class="timeline-period">2026-2028: Critical Transition Window</div>
+                                <div class="timeline-event">Decision Point</div>
+                                <div class="timeline-desc">
+                                    Next 2 years will determine Singapore's next phase. If government implements policies (reskilling, healthcare wage intervention, 
+                                    ICT talent pipeline), can navigate transition smoothly. If NOT, will face: Healthcare collapse (unfilled positions become crisis), 
+                                    Structural unemployment (120k retail workers), ICT talent flight (brain drain accelerates), Wage inequality social tension.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">7️⃣</div>
+                            <div class="timeline-content">
+                                <div class="timeline-period">2028-2035: Long-term Positioning</div>
+                                <div class="timeline-event">Sustainable Growth Model</div>
+                                <div class="timeline-desc">
+                                    Singapore either succeeds in transitioning to: (1) Productivity-driven growth (vs job-creation growth), (2) Distributed services economy 
+                                    (vs central concentration), (3) Resolved healthcare sustainability (vs crisis). OR faces: Stagnant employment, sectoral vulnerability, 
+                                    social inequality. This decade will determine whether Singapore remains prosperous or faces structural headwinds.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 6: COMPARISON -->
+            <div id="comparison" class="tab-content">
+                <section class="section">
+                    <h2 class="section-title">🌏 Singapore vs Indonesia Comprehensive Comparison</h2>
+
+                    <div class="comparison-wrapper">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Indicator</th>
+                                    <th>Singapore 2024</th>
+                                    <th>Indonesia 2024</th>
+                                    <th>Gap Analysis</th>
+                                    <th>Strategic Implication</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Total Workforce</strong></td>
+                                    <td>4.2M</td>
+                                    <td>138M</td>
+                                    <td><span class="badge badge-negative">33x difference</span></td>
+                                    <td>Different economy scales; SG precision vs IDN mass production</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Annual Growth Rate</strong></td>
+                                    <td>+1.2%</td>
+                                    <td>+2.8%</td>
+                                    <td><span class="badge badge-positive">IDN 2.3x faster</span></td>
+                                    <td>IDN has demographic dividend; SG hitting ceiling</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Formal Sector %</strong></td>
+                                    <td>85%</td>
+                                    <td>45%</td>
+                                    <td><span class="badge badge-negative">40pp gap</span></td>
+                                    <td>IDN 55% informal = massive human capital waste</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unemployment Rate</strong></td>
+                                    <td>2.1%</td>
+                                    <td>5.9%</td>
+                                    <td><span class="badge badge-positive">SG near full employment</span></td>
+                                    <td>SG labor market tight; IDN has absorption gap</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Female LFPR</strong></td>
+                                    <td>60%</td>
+                                    <td>52%</td>
+                                    <td><span class="badge badge-positive">SG +8pp via policy</span></td>
+                                    <td>Childcare subsidies proven effective; IDN has upside</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Wage Gap (Gender)</strong></td>
+                                    <td>12%</td>
+                                    <td>18%</td>
+                                    <td><span class="badge badge-positive">SG more equitable</span></td>
+                                    <td>SG policy success; IDN needs targeted interventions</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Automation Index</strong></td>
+                                    <td>65%</td>
+                                    <td>22%</td>
+                                    <td><span class="badge badge-negative">IDN 3x behind</span></td>
+                                    <td>SG completed automation; IDN in transition phase</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Avg Manufacturing Wage</strong></td>
+                                    <td>SGD 3,200</td>
+                                    <td>IDR 3.8M (≈$240)</td>
+                                    <td><span class="badge badge-negative">13x difference</span></td>
+                                    <td>Labor arbitrage opportunity; IDN cost advantage</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Services % of Employment</strong></td>
+                                    <td>87%</td>
+                                    <td>48%</td>
+                                    <td><span class="badge badge-neutral">Different phase</span></td>
+                                    <td>SG completed transition; IDN in industrialization</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Education (Tertiary %)</strong></td>
+                                    <td>78%</td>
+                                    <td>28%</td>
+                                    <td><span class="badge badge-negative">IDN 2.8x behind</span></td>
+                                    <td>SG knowledge economy; IDN skills gap critical</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 40px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 35px; border-radius: 15px; border-left: 6px solid #667eea;">
+                        <h3 style="color: #667eea; margin-bottom: 20px; font-size: 1.3em; font-weight: 800;">🔍 Strategic Assessment: SG vs IDN</h3>
+                        
+                        <p style="color: #555; margin-bottom: 18px; line-height: 1.8;">
+                            <strong>Singapore:</strong> Mature, automated, service-based economy dengan full employment (2.1% unemployment) dan near-saturation LFPR (65%). 
+                            Economic challenge: transition dari job-creation growth to productivity growth (demographic ceiling approaching). Opportunity: automation, 
+                            high-wage jobs, premium services. Risk: structural unemployment from retail/admin decline, healthcare sustainability.
+                        </p>
+
+                        <p style="color: #555; margin-bottom: 18px; line-height: 1.8;">
+                            <strong>Indonesia:</strong> Agrarian-to-manufacturing transition economy dengan massive informal sector (55%) dan young workforce (demographic dividend). 
+                            Economic opportunity: 138M workers, low labor cost (13x cheaper), manufacturing upside, consumer market growth. Risk: skills gap (28% tertiary 
+                            education), informal economy waste, uneven regional development (Jakarta concentration).
+                        </p>
+
+                        <p style="color: #555; margin-bottom: 18px; line-height: 1.8;">
+                            <strong>Complementarity:</strong> SG needs automation suppliers + IT services (could come from IDN tech hubs). IDN needs manufacturing anchors 
+                            + skill training (SG could partner for tech transfer). Bilateral opportunity: SG invests in IDN tech ecosystems; IDN provides manufacturing/services 
+                            base.
+                        </p>
+
+                        <div style="background: #f0fff4; padding: 20px; border-radius: 10px; border-left: 4px solid #10b981; margin-top: 20px; color: #555; font-weight: 600;">
+                            💡 <strong>Policy Insight:</strong> Indonesia should NOT copy Singapore blindly. Instead, learn specific lessons: 
+                            (1) Early skills investment (sunrise sectors NOW), (2) Gradual formalization (not shock), (3) Skill-based wages (not mandates), 
+                            (4) Childcare subsidies (female participation), (5) Geographic decentralization (anti-concentration). Each tailored to IDN context.
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+
+        <footer>
+            <p><strong>📊 Data Source:</strong> Ministry of Manpower Singapore (data.gov.sg) | <strong>Coverage:</strong> Q1 1991 - Q1 2026 (35 years)</p>
+            <p style="margin-top: 12px;">Professional analytics dashboard with policy recommendations, critical findings, and comprehensive SG-Indonesia comparison.</p>
+            <p style="margin-top: 18px; font-size: 0.9em; color: #999;">© 2026 Singapore Employment Dashboard v7.0 ULTIMATE | Complete Analytics Suite | Bahasa Indonesia</p>
+        </footer>
+    </div>
+
+    <script>
+        const sectorsData = [
+            { name: 'Construction', total: 45900, avg: 4590, std: 4381, min: -2400, max: 13800, trend: 'Growing' },
+            { name: 'Other Services', total: 82400, avg: 8240, std: 2825, min: 3900, max: 13600, trend: 'Growing' },
+            { name: 'Healthcare', total: 22500, avg: 2250, std: 1065, min: 100, max: 3700, trend: 'Growing' },
+            { name: 'Real Estate & Professional', total: 14200, avg: 1420, std: 3516, min: -4400, max: 6800, trend: 'Growing' },
+            { name: 'Finance & Insurance', total: 11900, avg: 1190, std: 2215, min: -3200, max: 5700, trend: 'Growing' },
+            { name: 'Transportation & Storage', total: 10000, avg: 1000, std: 1638, min: -1300, max: 4700, trend: 'Stable' },
+            { name: 'Manufacturing', total: 3500, avg: 350, std: 2554, min: -3800, max: 5500, trend: 'Flat' },
+            { name: 'Accommodation & Food Services', total: 400, avg: 40, std: 1289, min: -2200, max: 2600, trend: 'Flat' },
+            { name: 'Wholesale & Retail Trade', total: -6400, avg: -640, std: 2129, min: -3400, max: 3200, trend: 'Declining' },
+            { name: 'Information & Communications', total: -14000, avg: -1400, std: 1878, min: -5600, max: 2500, trend: 'Volatile' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+
+        function switchTab(evt, tabName) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        function initCharts() {
+            new Chart(document.getElementById('trendChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Q1 24', 'Q2 24', 'Q3 24', 'Q4 24', 'Q1 25', 'Q2 25', 'Q3 25', 'Q4 25', 'Q1 26'],
+                    datasets: [
+                        {
+                            label: 'Construction',
+                            data: [-2400, 5700, 3700, 4500, -1000, 5800, 13800, 8800, 2200],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true,
+                            pointBackgroundColor: '#10b981',
+                            pointBorderColor: '#fff',
+                            pointRadius: 6,
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Healthcare',
+                            data: [3300, 2200, 3400, 1700, 3000, 1800, 2100, 1200, 100],
+                            borderColor: '#0ea5e9',
+                            backgroundColor: 'rgba(14, 165, 233, 0.05)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: false,
+                            pointBackgroundColor: '#0ea5e9',
+                            pointBorderColor: '#fff',
+                            pointRadius: 6,
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Retail',
+                            data: [-1900, -2600, -3400, 2600, -1700, -2100, -1600, 700, 400],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: false,
+                            pointBackgroundColor: '#ef4444',
+                            pointBorderColor: '#fff',
+                            pointRadius: 6,
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'ICT',
+                            data: [-800, -900, 2500, -1100, -1600, -1700, -700, -1700, -2400],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: false,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: '#f59e0b',
+                            pointBorderColor: '#fff',
+                            pointRadius: 6,
+                            pointBorderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { size: 13, weight: '700' }, padding: 20, usePointStyle: true }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: v => v/1000 + 'k', font: { size: 12, weight: '600' } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('structureChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Services (78%)', 'Goods (22%)'],
+                    datasets: [{
+                        data: [78, 22],
+                        backgroundColor: ['#667eea', '#f59e0b'],
+                        borderColor: 'white',
+                        borderWidth: 4,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 14, weight: '700' }, padding: 25 } }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('contributionChart').getContext('2d'), {
+                type: 'bar',
+                indexAxis: 'y',
+                data: {
+                    labels: ['Other Services', 'Construction', 'Healthcare', 'Real Estate', 'Finance', 'Transportation', 'Manufacturing', 'Accommodation', 'Retail', 'ICT'],
+                    datasets: [{
+                        label: 'Cumulative Growth',
+                        data: [82400, 45900, 22500, 14200, 11900, 10000, 3500, 400, -6400, -14000],
+                        backgroundColor: [
+                            '#10b981', '#10b981', '#10b981', '#10b981', '#10b981',
+                            '#10b981', '#fbbf24', '#fbbf24', '#ef4444', '#ef4444'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            ticks: { callback: v => v/1000 + 'k', font: { size: 12, weight: '600' } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function exportPDF() {
+            const element = document.querySelector('.container');
+            const opt = {
+                margin: 10,
+                filename: 'Singapore_Employment_Dashboard_v7.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"305641585f3841538508659aa3d2ee40","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employment Dashboard: Indonesia & Singapore | Interactive Analysis</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .nav-brand {
+            font-size: 1.3em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            max-width: 2000px;
+            margin: 80px auto 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 50px 150px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 50px;
+            text-align: center;
+        }
+
+        header h1 { font-size: 2.5em; margin-bottom: 8px; }
+        header p { font-size: 1em; opacity: 0.95; }
+
+        .country-tabs {
+            display: flex;
+            gap: 0;
+            background: #f8f9fa;
+            border-bottom: 3px solid #e0e0e0;
+        }
+
+        .country-tab {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 700;
+            border: none;
+            background: white;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .country-tab:hover { background: #f0f0f0; }
+        .country-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .content { padding: 40px 50px; }
+        .country-content { display: none; }
+        .country-content.active { display: block; }
+
+        .section { margin-bottom: 50px; }
+        .section-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #667eea;
+            font-weight: 800;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .kpi-label { font-size: 0.8em; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; }
+        .kpi-value { font-size: 1.9em; font-weight: 800; }
+        .kpi-subtitle { font-size: 0.85em; opacity: 0.85; }
+
+        .chart-section {
+            background: #fafbfc;
+            padding: 28px;
+            border-radius: 12px;
+            border: 2px solid #e8eaed;
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            font-size: 1.2em;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .chart-description {
+            background: rgba(102, 126, 234, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            margin-bottom: 16px;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .plotly-container {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e8eaed;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .insight-box {
+            background: rgba(16, 185, 129, 0.08);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            color: #333;
+            font-size: 0.92em;
+            line-height: 1.6;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.08);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            color: #333;
+            font-size: 0.92em;
+            margin-bottom: 16px;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 18px;
+            border-radius: 10px;
+            border: 1px solid #e8eaed;
+        }
+
+        .stat-label { font-size: 0.8em; color: #666; font-weight: 600; margin-bottom: 6px; }
+        .stat-value { font-size: 1.7em; font-weight: 800; color: #667eea; }
+        .stat-change { font-size: 0.85em; color: #10b981; margin-top: 4px; }
+        .stat-change.negative { color: #ef4444; }
+
+        footer {
+            background: #f8f9fa;
+            padding: 25px 50px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .interactive-note {
+            background: #e3f2fd;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-left: 3px solid #2196f3;
+            font-size: 0.9em;
+            color: #1565c0;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="nav-brand">📊 Employment Dashboard: Interactive Analysis</div>
+</div>
+
+<div class="container">
+    <header>
+        <h1>Regional Employment Dashboard 2025</h1>
+        <p>Interactive Charts | Indonesia & Singapore | Data: August 2025</p>
+    </header>
+
+    <div class="country-tabs">
+        <button class="country-tab active" onclick="switchTab('indonesia')">🇮🇩 Indonesia</button>
+        <button class="country-tab" onclick="switchTab('singapore')">🇸🇬 Singapore</button>
+        <button class="country-tab" onclick="switchTab('comparison')">⚖️ Comparison</button>
+    </div>
+
+    <div class="content">
+
+        <!-- INDONESIA TAB -->
+        <div id="indonesia" class="country-content active">
+            <div class="interactive-note">
+                💡 <strong>Interactive Charts:</strong> Hover untuk detail | Klik legend untuk toggle series | Drag untuk zoom | Double-click untuk reset
+            </div>
+
+            <div class="section">
+                <div class="section-title">Labour Market Overview</div>
+                
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Employed</div>
+                        <div class="kpi-value">145.77M</div>
+                        <div class="kpi-subtitle">Feb 2025 | +2.5% YoY</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Labour Force</div>
+                        <div class="kpi-value">152.71M</div>
+                        <div class="kpi-subtitle">Feb 2025</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Unemployment Rate</div>
+                        <div class="kpi-value">4.76%</div>
+                        <div class="kpi-subtitle">Feb 2025</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Avg Monthly Wage</div>
+                        <div class="kpi-value">IDR 3.33M</div>
+                        <div class="kpi-subtitle">Aug 2025 | +1.8% YoY</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Sector Growth Rates (YoY % Change, Feb 2025)</div>
+                <div class="chart-description">
+                    Klik legend untuk filter sektor. Hover untuk melihat persentase pertumbuhan pasti. Professional Services adalah leader dengan +14.5% growth.
+                </div>
+                <div class="plotly-container" id="idGrowthChart"></div>
+                <div class="insight-box">
+                    ✓ <strong>Top Growing Sectors:</strong> Professional Services (+14.5%), Water Supply (+8.6%), Transportation (+4.6%) | <strong>Declining:</strong> Mining (-3.5%), Government (-2.7%)
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Employment Distribution by Type</div>
+                <div class="chart-description">
+                    Distribusi jenis pekerjaan: Full-time 66%, Part-time 26%, Underemployed 8%. Klik section untuk isolasi kategori tertentu.
+                </div>
+                <div class="plotly-container" id="idTypeChart"></div>
+                <div class="insight-box">
+                    ⚠️ <strong>Quality Concern:</strong> 34% of workforce (part-time + underemployed) facing income instability. Policy intervention needed.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Top Employment Sectors Trend</div>
+                <div class="chart-description">
+                    Tren 2023-2025 untuk 6 sektor terbesar. Drag untuk zoom ke period tertentu. Double-click untuk reset view.
+                </div>
+                <div class="plotly-container" id="idSectorChart"></div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="stat-label">Agriculture</div>
+                    <div class="stat-value">41.61M</div>
+                    <div class="stat-change">+2.2% YoY | 28.5% of total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Wholesale & Retail Trade</div>
+                    <div class="stat-value">28.07M</div>
+                    <div class="stat-change">+3.6% YoY | 19.3% of total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Manufacturing</div>
+                    <div class="stat-value">19.60M</div>
+                    <div class="stat-change">+3.8% YoY | Stable</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Prof. Services</div>
+                    <div class="stat-value">2.53M</div>
+                    <div class="stat-change">🔥 +14.5% YoY | FASTEST</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SINGAPORE TAB -->
+        <div id="singapore" class="country-content">
+            <div class="interactive-note">
+                💡 <strong>Interactive Charts:</strong> Hover untuk quarterly values | Klik untuk filter | Zoom dengan drag | Reset dengan double-click
+            </div>
+
+            <div class="section">
+                <div class="section-title">Quarterly Employment Changes Trend</div>
+                
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Job Creation (10Q)</div>
+                        <div class="kpi-value">147.2k</div>
+                        <div class="kpi-subtitle">Q4 2023 – Q1 2026</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Peak Quarter</div>
+                        <div class="kpi-value">+30.2k</div>
+                        <div class="kpi-subtitle">Q3 2025</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Latest (Q1 2026)</div>
+                        <div class="kpi-value">+8.6k</div>
+                        <div class="kpi-subtitle">Slowing trend ⚠️</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Services Share</div>
+                        <div class="kpi-value">67%</div>
+                        <div class="kpi-subtitle">Of total growth</div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    ⚠️ <strong>Deceleration Alert:</strong> Job creation slowing: 30.2k (Q3 2025) → 8.6k (Q1 2026). Possible structural slowdown?
+                </div>
+
+                <div class="chart-description">
+                    Drag untuk zoom ke quarter tertentu. Hover untuk exact figures. Klik legend untuk toggle Goods/Services comparison.
+                </div>
+                <div class="plotly-container" id="sgQuarterlyChart"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Top & Bottom Sectors (10Q Total Change)</div>
+                <div class="chart-description">
+                    Sektor yang tumbuh dan yang turun. Green = pertumbuhan, Red = penurunan. Hover untuk exact numbers.
+                </div>
+                <div class="plotly-container" id="sgSectorChart"></div>
+                <div class="insight-box">
+                    🔴 <strong>Concern:</strong> ICT sector down -14k despite Singapore's "tech hub" status. Suggests automation/skill mismatch.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Goods vs Services: Sectoral Shift</div>
+                <div class="chart-description">
+                    Cumulative trend menunjukkan Services terus mendominasi growth. Klik untuk highlight series tertentu.
+                </div>
+                <div class="plotly-container" id="sgGoodsChart"></div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="stat-label">Other Services</div>
+                    <div class="stat-value">+82.4k</div>
+                    <div class="stat-change">Largest growth sector</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Construction</div>
+                    <div class="stat-value">+45.9k</div>
+                    <div class="stat-change">Mega-projects boom</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Healthcare</div>
+                    <div class="stat-value">+22.5k</div>
+                    <div class="stat-change">Aging population</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">ICT</div>
+                    <div class="stat-value">-14.0k</div>
+                    <div class="stat-change negative">Structural decline</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPARISON TAB -->
+        <div id="comparison" class="country-content">
+            <div class="interactive-note">
+                💡 <strong>Comparison Charts:</strong> Hover untuk detail kedua negara | Klik untuk isolasi satu negara | Zoom untuk lihat detail
+            </div>
+
+            <div class="section">
+                <div class="section-title">Labour Market Structure Comparison</div>
+                
+                <div class="warning-box">
+                    ⚠️ <strong>Data Unit Caveat:</strong> Indonesia = absolute levels (millions) | Singapore = quarterly changes (thousands). Structured very differently - compare insights, not numbers.
+                </div>
+
+                <div class="chart-description">
+                    Radar chart menunjukkan struktur pasar tenaga kerja fundamentally different. Indonesia: large informal sector, agriculture-heavy, emerging economy. Singapore: formal sector, services-dominant, developed economy.
+                </div>
+                <div class="plotly-container" id="comparisonChart"></div>
+
+                <div class="insight-box">
+                    <strong>📊 Key Structural Differences:</strong><br>
+                    <strong>Indonesia:</strong> 42% formal, 28.5% agriculture, 4.8% unemployment, 145.77M employed<br>
+                    <strong>Singapore:</strong> ~100% formal, 78% services, ~2-3% unemployment, ~3.8M employed<br>
+                    <strong>Bottom line:</strong> Indonesia emerging (formalize workforce), Singapore developed (sectoral reallocation amid automation)
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="stat-label">Indonesia: Total Employment</div>
+                    <div class="stat-value">145.77M</div>
+                    <div class="stat-change">Feb 2025 | +2.5% YoY</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Singapore: Est. Employment</div>
+                    <div class="stat-value">~3.8M</div>
+                    <div class="stat-change">Q1 2026 estimate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Indonesia: Unemployment</div>
+                    <div class="stat-value">4.76%</div>
+                    <div class="stat-change">Higher than SG</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Singapore: Unemployment</div>
+                    <div class="stat-value">~2-3%</div>
+                    <div class="stat-change">Very low (est.)</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <p><strong>Interactive Employment Dashboard | Data Sources: BPS Indonesia (Sakernas) & MoM Singapore (data.gov.sg)</strong></p>
+    <p>Charts built with Plotly.js | Fully interactive & responsive | Updated: June 2025</p>
+</footer>
+
+<script>
+function switchTab(tabName) {
+    document.querySelectorAll('.country-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.country-tab').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+}
+
+const plotlyConfig = {
+    responsive: true,
+    displayModeBar: true,
+    modeBarButtonsToAdd: [{
+        name: 'Download as PNG',
+        icon: Plotly.Icons.camera,
+        click: function(gd) {
+            Plotly.downloadImage(gd, { format: 'png' });
+        }
+    }]
+};
+
+// ========== INDONESIA CHARTS ==========
+
+// Sector Growth Rates
+const idGrowthData = [{
+    y: ['Professional Services', 'Water Supply', 'Transportation', 'Manufacturing', 'Retail', 'Hospitality', 'Mining', 'Government'],
+    x: [14.5, 8.6, 4.6, 3.8, 3.6, 3.3, -3.5, -2.7],
+    type: 'bar',
+    marker: {
+        color: ['#10b981', '#10b981', '#10b981', '#10b981', '#10b981', '#10b981', '#ef4444', '#ef4444']
+    },
+    orientation: 'h'
+}];
+const idGrowthLayout = {
+    title: { text: 'Sector Growth Rates (YoY %, Feb 2025)', x: 0, xanchor: 'left' },
+    xaxis: { title: 'YoY Growth %' },
+    margin: { l: 200 },
+    height: 400,
+    hovermode: 'closest'
+};
+Plotly.newPlot('idGrowthChart', idGrowthData, idGrowthLayout, plotlyConfig);
+
+// Employment Type Distribution
+const idTypeData = [{
+    values: [66.19, 25.81, 8],
+    labels: ['Full-time (66.19%)', 'Part-time (25.81%)', 'Underemployed (8%)'],
+    type: 'pie',
+    marker: { colors: ['#667eea', '#f59e0b', '#ef4444'] },
+    hovertemplate: '<b>%{label}</b><br>%{value}%<extra></extra>'
+}];
+const idTypeLayout = {
+    title: { text: 'Employment Type Distribution (Feb 2025)', x: 0, xanchor: 'left' },
+    height: 400,
+    showlegend: true
+};
+Plotly.newPlot('idTypeChart', idTypeData, idTypeLayout, plotlyConfig);
+
+// Sector Trends
+const idSectorData = [
+    {
+        x: ['Feb 2023', 'Aug 2023', 'Feb 2024', 'Aug 2024', 'Feb 2025', 'Aug 2025'],
+        y: [40.64, 42.34, 40.71, 44.64, 41.61, 45.13],
+        name: 'Agriculture',
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#10b981', width: 3 },
+        hovertemplate: 'Agriculture: %{y}M<extra></extra>'
+    },
+    {
+        x: ['Feb 2023', 'Aug 2023', 'Feb 2024', 'Aug 2024', 'Feb 2025', 'Aug 2025'],
+        y: [26.95, 26.9, 27.1, 27.25, 28.07, 27.37],
+        name: 'Wholesale & Retail',
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#667eea', width: 3 },
+        hovertemplate: 'Wholesale & Retail: %{y}M<extra></extra>'
+    },
+    {
+        x: ['Feb 2023', 'Aug 2023', 'Feb 2024', 'Aug 2024', 'Feb 2025', 'Aug 2025'],
+        y: [18.35, 18.63, 18.88, 18.86, 19.6, 19.16],
+        name: 'Manufacturing',
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#f59e0b', width: 3 },
+        hovertemplate: 'Manufacturing: %{y}M<extra></extra>'
+    }
+];
+const idSectorLayout = {
+    title: { text: 'Top 3 Sectors Employment Trend (Millions)', x: 0, xanchor: 'left' },
+    xaxis: { title: 'Period' },
+    yaxis: { title: 'Employed (Millions)' },
+    height: 400,
+    hovermode: 'x unified',
+    legend: { x: 0.01, y: 0.99 }
+};
+Plotly.newPlot('idSectorChart', idSectorData, idSectorLayout, plotlyConfig);
+
+// ========== SINGAPORE CHARTS ==========
+
+// Quarterly Chart
+const sgQuarterlyData = [{
+    x: ['Q4 2023', 'Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026'],
+    y: [8.0, 8.1, 14.9, 24.9, 11.9, 6.9, 12.9, 30.2, 20.8, 8.6],
+    type: 'bar',
+    marker: {
+        color: [8.0, 8.1, 14.9, 24.9, 11.9, 6.9, 12.9, 30.2, 20.8, 8.6],
+        colorscale: [[0, '#ef4444'], [0.5, '#f59e0b'], [1, '#10b981']],
+        showscale: false
+    },
+    hovertemplate: '%{x}<br>%{y}k jobs<extra></extra>'
+}];
+const sgQuarterlyLayout = {
+    title: { text: 'Quarterly Employment Changes (thousands)', x: 0, xanchor: 'left' },
+    yaxis: { title: 'Job Change (thousands)' },
+    height: 400,
+    hovermode: 'x'
+};
+Plotly.newPlot('sgQuarterlyChart', sgQuarterlyData, sgQuarterlyLayout, plotlyConfig);
+
+// Sector Performance
+const sgSectorData = [{
+    y: ['Other Services', 'Construction', 'Real Estate/Prof', 'Finance', 'Transportation', 'Manufacturing', 'Hospitality', 'Retail', 'ICT'],
+    x: [82.4, 45.9, 14.2, 11.9, 10.0, 3.5, 0.4, -6.4, -14.0],
+    type: 'bar',
+    marker: {
+        color: ['#10b981', '#10b981', '#10b981', '#10b981', '#10b981', '#10b981', '#f59e0b', '#ef4444', '#ef4444']
+    },
+    orientation: 'h',
+    hovertemplate: '%{y}<br>%{x}k<extra></extra>'
+}];
+const sgSectorLayout = {
+    title: { text: 'Sector Performance (10Q Total, thousands)', x: 0, xanchor: 'left' },
+    xaxis: { title: 'Job Change (thousands)' },
+    margin: { l: 180 },
+    height: 400,
+    hovermode: 'closest'
+};
+Plotly.newPlot('sgSectorChart', sgSectorData, sgSectorLayout, plotlyConfig);
+
+// Goods vs Services
+const sgGoodsData = [
+    {
+        x: ['Q4 2023', 'Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026'],
+        y: [1.8, 8.8, 15.9, 20.3, 24.6, 22.8, 29.5, 49.4, 60.5, 61.7],
+        name: 'Goods (cumulative)',
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#f59e0b', width: 3 },
+        hovertemplate: 'Goods: %{y}k cumulative<extra></extra>'
+    },
+    {
+        x: ['Q4 2023', 'Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026'],
+        y: [6.2, 20.3, 28.1, 48.6, 56.2, 65.0, 71.2, 81.5, 91.3, 98.6],
+        name: 'Services (cumulative)',
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#667eea', width: 3 },
+        hovertemplate: 'Services: %{y}k cumulative<extra></extra>'
+    }
+];
+const sgGoodsLayout = {
+    title: { text: 'Goods vs Services: Cumulative Job Creation', x: 0, xanchor: 'left' },
+    xaxis: { title: 'Quarter' },
+    yaxis: { title: 'Cumulative Change (thousands)' },
+    height: 400,
+    hovermode: 'x unified',
+    legend: { x: 0.01, y: 0.99 }
+};
+Plotly.newPlot('sgGoodsChart', sgGoodsData, sgGoodsLayout, plotlyConfig);
+
+// ========== COMPARISON CHART ==========
+
+const comparisonData = [
+    {
+        r: [42.2, 4.76, 28.5, 50, 2.5],
+        theta: ['Formal %', 'Unemployment %', 'Agriculture %', 'Services %', 'Growth %'],
+        name: 'Indonesia',
+        type: 'scatterpolar',
+        fill: 'toself',
+        marker: { color: '#ef4444' }
+    },
+    {
+        r: [100, 3, 0, 78, 3.5],
+        theta: ['Formal %', 'Unemployment %', 'Agriculture %', 'Services %', 'Growth %'],
+        name: 'Singapore',
+        type: 'scatterpolar',
+        fill: 'toself',
+        marker: { color: '#10b981' }
+    }
+];
+const comparisonLayout = {
+    title: { text: 'Labour Market Structure Comparison', x: 0.5, xanchor: 'center' },
+    polar: { radialaxis: { visible: true, range: [0, 100] } },
+    height: 450,
+    showlegend: true,
+    legend: { x: 1.1, y: 1 }
+};
+Plotly.newPlot('comparisonChart', comparisonData, comparisonLayout, plotlyConfig);
+</script>
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"305641585f3841538508659aa3d2ee40","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
